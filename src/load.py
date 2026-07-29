@@ -3,6 +3,9 @@ import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
+from extract import extract_sales_data
+from transform import transform_sales_data
+
 
 load_dotenv()
 
@@ -36,4 +39,10 @@ def load_sales_data(df):
 
 
 if __name__ == "__main__":
-    print("Database loader ready.")
+    sales_data = extract_sales_data()
+
+    transformed_data = transform_sales_data(sales_data)
+
+    load_sales_data(transformed_data)
+
+    print("ETL pipeline completed successfully.")
