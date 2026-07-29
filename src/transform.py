@@ -45,7 +45,17 @@ def transform_sales_data(df):
 
     # Calculate total sales
     df["Total"] = df["Cantidad"] * df["Precio"]
-
+    # Rename columns to match PostgreSQL schema
+    df = df.rename(columns={
+        "Fecha": "sale_date",
+        "Sucursal": "branch",
+        "Vendedor": "seller",
+        "Cliente": "customer",
+        "Producto": "product",
+        "Cantidad": "quantity",
+        "Precio": "unit_price",
+        "Total": "total",
+    })
     return df
 
 
@@ -62,4 +72,4 @@ if __name__ == "__main__":
     print(transformed_data.dtypes)
 
     print("\nTotal sales:")
-    print(transformed_data["Total"].sum())
+    print(transformed_data["total"].sum())
