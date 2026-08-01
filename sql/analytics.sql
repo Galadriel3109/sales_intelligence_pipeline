@@ -1,9 +1,7 @@
--- ============================================================
--- SALES INTELLIGENCE PIPELINE
--- Business Analytics Queries
--- ============================================================
+-- Sales Intelligence Analytics
+-- Business analysis queries
 
--- 1. ¿Cuál sucursal vende más?
+-- 1. Sales by branch
 SELECT
     branch,
     SUM(total) AS total_sales
@@ -12,7 +10,7 @@ GROUP BY branch
 ORDER BY total_sales DESC;
 
 
--- 2. ¿Cuál producto genera más ventas?
+-- 2. Sales by product
 SELECT
     product,
     SUM(quantity) AS units_sold,
@@ -22,7 +20,7 @@ GROUP BY product
 ORDER BY total_sales DESC;
 
 
--- 3. ¿Qué vendedor vende más?
+-- 3. Sales performance by seller
 SELECT
     seller,
     COUNT(*) AS number_of_sales,
@@ -32,7 +30,7 @@ GROUP BY seller
 ORDER BY total_sales DESC;
 
 
--- 4. ¿Qué clientes compran más?
+-- 4. Customer purchases
 SELECT
     customer,
     COUNT(*) AS number_of_purchases,
@@ -42,16 +40,16 @@ GROUP BY customer
 ORDER BY total_spent DESC;
 
 
--- 5. ¿Cuál es la tendencia de ventas por fecha?
+-- 5. Daily sales
 SELECT
-    sale_date,
+    DATE(sale_date) AS sale_date,
     SUM(total) AS daily_sales
 FROM sales
-GROUP BY sale_date
+GROUP BY DATE(sale_date)
 ORDER BY sale_date;
 
 
--- 6. Resumen general del negocio
+-- 6. General business summary
 SELECT
     COUNT(*) AS total_transactions,
     SUM(quantity) AS total_units_sold,

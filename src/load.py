@@ -1,10 +1,11 @@
 import os
 
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 from extract import extract_sales_data
 from transform import transform_sales_data
+
 
 
 load_dotenv()
@@ -24,18 +25,56 @@ def get_database_engine():
 
 
 def load_sales_data(df):
-    """Load transformed sales data into PostgreSQL."""
+    """Load transformed sales data into PostgreSQL without duplicates."""
 
     engine = get_database_engine()
 
-    df.to_sql(
-        "sales",
-        engine,
-        if_exists="append",
-        index=False
-    )
+    columns = [
+        "sale_date",
+        "seller",
+        "customer",
+        "product",
+        "quantity",
+        "unit_price",
+        "branch",
+        "total"
+    ]
 
-    print(f"Loaded {len(df)} rows into PostgreSQL.")
+    insert_sql = """
+        INSERT INTO sales (
+            sale_date,
+            seller,
+            customer,
+            product,
+            quantity,
+            unit_price,
+            branch,
+            total
+        )
+        VALUES (
+            :sale_date,
+            :seller,
+            :customer,
+            :product,
+            :quantity,
+            :unit_price,
+            :branch,
+            :total
+        )
+        ON CONFLICT (sale_date, seller, customer, product, branch)
+        DO NOTHING;
+    """
+
+    records = df[columns].to_dict(orient="records")
+
+    with engine.begin() as connection:
+        result = connection.execute(
+            text(insert_sql),
+            records
+        )
+
+    print(f"Processed {len(records)} rows.")
+    print(f"Inserted {result.rowcount} new rows.")
 
 
 if __name__ == "__main__":
