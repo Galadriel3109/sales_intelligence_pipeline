@@ -1,20 +1,25 @@
 # Sales Intelligence Pipeline
 
-## Solución automatizada de datos para análisis de ventas
+## Solución automatizada de datos para análisis y toma de decisiones
 
 ### 📌 Descripción
 
-**Sales Intelligence Pipeline** es una solución de datos diseñada para automatizar el proceso de consolidación, transformación y análisis de información de ventas proveniente de diferentes sucursales.
+**Sales Intelligence Pipeline** es una solución de datos que automatiza el proceso completo de consolidación, transformación, almacenamiento y análisis de información de ventas proveniente de diferentes sucursales.
 
-El proyecto simula un escenario empresarial en el que **3 sucursales generan archivos Excel independientes** y la dirección necesita obtener información consolidada para responder preguntas como:
+El proyecto simula un escenario empresarial en el que diferentes sucursales generan archivos Excel independientes y la dirección necesita transformar esa información dispersa en datos confiables para responder preguntas como:
 
-* ¿Qué sucursal vende más?
-* ¿Qué producto genera mayor facturación?
-* ¿Qué vendedor tiene el mejor desempeño?
+* ¿Qué sucursal genera más ingresos?
+* ¿Qué producto tiene mayor facturación?
+* ¿Qué vendedor genera más ventas?
 * ¿Qué clientes representan mayor valor?
-* ¿Cuál es la tendencia de ventas?
+* ¿Cómo evolucionan las ventas a lo largo del tiempo?
+* ¿Qué ocurre cuando se incorporan nuevos datos?
 
-El objetivo es transformar un proceso manual y repetitivo en un **flujo automatizado de datos**, desde los archivos de origen hasta una base de datos preparada para análisis.
+La solución automatiza el flujo completo:
+
+**Excel → Python ETL → PostgreSQL → SQL Analytics → Dashboard interactivo**
+
+El objetivo es convertir procesos manuales y repetitivos en **procesos automatizados, estructurados y medibles**.
 
 ---
 
@@ -22,15 +27,22 @@ El objetivo es transformar un proceso manual y repetitivo en un **flujo automati
 
 Demostrar cómo una solución de datos puede automatizar un proceso completo de:
 
-**Extracción → Transformación → Carga → Análisis**
+**Extracción → Transformación → Carga → Análisis → Visualización**
 
-El proyecto está orientado a ofrecer soluciones de datos a empresas que actualmente trabajan con información dispersa en archivos Excel y necesitan convertirla en información confiable para la toma de decisiones.
+El proyecto está orientado a empresas que actualmente trabajan con información dispersa en Excel u otras fuentes y necesitan:
+
+* Reducir trabajo manual.
+* Disminuir errores.
+* Centralizar información.
+* Automatizar cargas de datos.
+* Obtener indicadores de negocio.
+* Facilitar la toma de decisiones mediante dashboards.
 
 ---
 
 ## 💼 Problema de negocio
 
-La empresa recibe diariamente información de ventas de tres sucursales en archivos Excel separados.
+Una empresa recibe diariamente información de ventas de diferentes sucursales en archivos Excel separados.
 
 Sin automatización, consolidar esta información requiere:
 
@@ -40,12 +52,13 @@ Sin automatización, consolidar esta información requiere:
 4. Calcular totales.
 5. Cargar la información a una base de datos.
 6. Crear reportes manualmente.
+7. Repetir el proceso cada vez que llegan nuevos archivos.
 
-Este proceso consume tiempo y aumenta el riesgo de errores.
+Este proceso consume tiempo y aumenta el riesgo de errores y duplicados.
 
 ### Solución propuesta
 
-Se construyó un pipeline automatizado que realiza estas tareas mediante Python, Pandas y PostgreSQL.
+Se construyó un pipeline automatizado utilizando Python, Pandas y PostgreSQL.
 
 ```text
 Excel Sucursal Norte ──┐
@@ -54,13 +67,17 @@ Excel Sucursal Centro ─┘
                          ↓
                     TRANSFORM
                          ↓
-                    LOAD
+                 VALIDATION / CLEANING
                          ↓
-                  PostgreSQL
+                      LOAD
+                         ↓
+                   PostgreSQL
                          ↓
                   SQL ANALYTICS
                          ↓
-               Business Insights
+              STREAMLIT DASHBOARD
+                         ↓
+                BUSINESS INSIGHTS
 ```
 
 ---
@@ -75,6 +92,8 @@ Excel Sucursal Centro ─┘
 * **PostgreSQL**
 * **SQL**
 * **python-dotenv**
+* **Streamlit**
+* **Plotly**
 * **Git / GitHub**
 
 ---
@@ -89,7 +108,7 @@ El pipeline lee automáticamente los archivos Excel ubicados en:
 data/raw/
 ```
 
-Actualmente se utilizan tres archivos:
+Actualmente se utilizan:
 
 ```text
 sucursal_centro.xlsx
@@ -97,9 +116,7 @@ sucursal_norte.xlsx
 sucursal_sur.xlsx
 ```
 
-El proceso consolida la información de las tres sucursales.
-
-**Resultado actual: 9 registros extraídos.**
+La información de las diferentes sucursales se consolida en un único DataFrame para continuar el procesamiento.
 
 ---
 
@@ -112,6 +129,7 @@ Entre las transformaciones realizadas:
 * Normalización de nombres de columnas.
 * Conversión de fechas.
 * Validación de tipos de datos.
+* Estandarización de campos.
 * Cálculo del importe total de cada venta.
 
 La fórmula utilizada es:
@@ -144,16 +162,65 @@ Tabla:
 sales
 ```
 
-El proceso actualmente carga los registros mediante:
+La solución utiliza una estrategia de **carga incremental**, evitando insertar nuevamente registros que ya existen.
 
-```python
-df.to_sql(
-    "sales",
-    engine,
-    if_exists="append",
-    index=False
-)
+Para controlar duplicados se utiliza una restricción única basada en:
+
+```text
+sale_date
+seller
+customer
+product
+branch
 ```
+
+Esto permite ejecutar nuevamente el pipeline sin duplicar las ventas previamente cargadas.
+
+Ejemplo:
+
+```text
+Processed 10 rows.
+Inserted 0 new rows.
+ETL pipeline completed successfully.
+```
+
+Cuando se incorpora una nueva venta:
+
+```text
+Processed 10 rows.
+Inserted 1 new rows.
+ETL pipeline completed successfully.
+```
+
+---
+
+## 🗄️ Base de datos
+
+PostgreSQL almacena la información consolidada en la tabla:
+
+```text
+sales
+```
+
+La estructura principal incluye:
+
+```text
+sale_date
+seller
+customer
+product
+quantity
+unit_price
+branch
+total
+```
+
+Actualmente el dataset contiene:
+
+* **3 sucursales**
+* **10 transacciones**
+* **34 unidades vendidas**
+* **$122,300.00 en ingresos**
 
 ---
 
@@ -166,42 +233,50 @@ Una vez cargados los datos, SQL permite obtener indicadores relevantes para la d
 | Sucursal |     Ventas |
 | -------- | ---------: |
 | Norte    | $47,500.00 |
-| Sur      | $37,800.00 |
+| Sur      | $46,800.00 |
 | Centro   | $28,000.00 |
 
 **Sucursal líder:** Norte.
+
+---
 
 ### Ventas por producto
 
 | Producto | Unidades |     Ventas |
 | -------- | -------: | ---------: |
 | Laptop   |        4 | $60,000.00 |
-| Monitor  |        9 | $40,500.00 |
+| Monitor  |       11 | $49,500.00 |
 | Teclado  |       11 |  $8,800.00 |
 | Mouse    |        8 |  $4,000.00 |
 
 **Producto con mayor facturación:** Laptop.
 
+---
+
 ### Ventas por vendedor
 
 | Vendedor | Transacciones |     Ventas |
 | -------- | ------------: | ---------: |
+| Pedro    |             3 | $42,000.00 |
 | Ana      |             2 | $34,000.00 |
-| Pedro    |             2 | $33,000.00 |
 | Carlos   |             2 | $24,000.00 |
 | Luis     |             1 | $13,500.00 |
 | Laura    |             1 |  $4,800.00 |
 | Maria    |             1 |  $4,000.00 |
 
-**Vendedor líder:** Ana.
+**Vendedor líder por facturación:** Pedro.
+
+---
 
 ### Clientes
 
-El cliente con mayor valor de compra registrado es:
+El mayor valor de compra registrado corresponde a:
 
 **Cliente A — $30,000.00**
 
-> Nota: los datos actuales son un dataset de demostración y cada cliente aparece una sola vez. Por lo tanto, este indicador representa el mayor valor de compra registrado, no frecuencia o recurrencia del cliente.
+Los datos actuales son un dataset de demostración y cada cliente aparece una sola vez. Por lo tanto, este indicador representa el mayor valor de compra registrado y no permite todavía medir frecuencia o recurrencia.
+
+---
 
 ### Tendencia diaria
 
@@ -210,21 +285,99 @@ El cliente con mayor valor de compra registrado es:
 | 2026-07-01 | $63,000.00 |
 | 2026-07-02 | $22,300.00 |
 | 2026-07-03 | $28,000.00 |
+| 2026-07-04 |  $9,000.00 |
 
 El **1 de julio** fue el día con mayor facturación del dataset.
 
 ---
 
-## 📈 Resultado
+## 📈 Dashboard interactivo
 
-El pipeline procesa actualmente:
+El proyecto incluye un dashboard desarrollado con **Streamlit**.
 
-* **3 archivos Excel**
-* **3 sucursales**
-* **9 registros**
-* **$113,300.00 en ventas**
+El dashboard presenta:
 
-El proceso completo puede ejecutarse mediante Python, evitando la consolidación manual de los archivos.
+### KPIs
+
+* Total Revenue
+* Transactions
+* Units Sold
+* Average Transaction
+
+### Visualizaciones
+
+* Sales by Branch
+* Sales by Product
+* Sales by Seller
+* Sales Trend
+
+### Filtros interactivos
+
+El usuario puede analizar los datos mediante:
+
+```text
+Sucursal
+Producto
+Vendedor
+```
+
+Los filtros pueden combinarse para realizar análisis específicos.
+
+Por ejemplo:
+
+```text
+Sucursal: Sur
+Producto: Monitor
+Vendedor: Pedro
+```
+
+Resultado:
+
+```text
+Total Revenue:        $27,000
+Transactions:               2
+Units Sold:                  6
+Average Transaction:    $13,500
+```
+
+Esto permite analizar información sin necesidad de ejecutar consultas SQL manualmente.
+
+---
+
+## 🧠 Flujo completo de la solución
+
+```text
+                 FUENTES DE DATOS
+                       │
+             ┌─────────┴─────────┐
+             ↓                   ↓
+       Excel Norte          Excel Sur
+             │                   │
+             └─────────┬─────────┘
+                       │
+                  Excel Centro
+                       ↓
+                 PYTHON / ETL
+                       │
+             ┌─────────┼─────────┐
+             ↓         ↓         ↓
+          Extract   Transform  Validation
+                       │
+                       ↓
+                    PostgreSQL
+                       │
+                       ↓
+                  SQL Analytics
+                       │
+                       ↓
+              Streamlit Dashboard
+                       │
+                       ↓
+               Business Insights
+                       │
+                       ↓
+              Toma de decisiones
+```
 
 ---
 
@@ -238,9 +391,11 @@ sales_intelligence_pipeline/
 │   │   ├── sucursal_centro.xlsx
 │   │   ├── sucursal_norte.xlsx
 │   │   └── sucursal_sur.xlsx
+│   │
 │   └── processed/
 │
 ├── dashboard/
+│   └── dashboard.py
 │
 ├── docs/
 │   └── project_overview.md
@@ -307,8 +462,10 @@ DATABASE_URL=postgresql+psycopg2://postgres:TU_PASSWORD@localhost:5432/sales_int
 
 ### 5. Ejecutar el pipeline
 
+Desde la raíz del proyecto:
+
 ```bash
-python src/load.py
+python src/pipeline.py
 ```
 
 El proceso realizará:
@@ -320,9 +477,25 @@ Extract
  ↓
 Transform
  ↓
-Load
+Validation
+ ↓
+Incremental Load
  ↓
 PostgreSQL
+```
+
+### 6. Ejecutar el dashboard
+
+Con el entorno virtual activo:
+
+```bash
+streamlit run dashboard/dashboard.py
+```
+
+El dashboard se abrirá en:
+
+```text
+http://localhost:8501
 ```
 
 ---
@@ -331,12 +504,16 @@ PostgreSQL
 
 Este proyecto demuestra experiencia práctica en:
 
-* Diseño de procesos ETL.
+* Diseño y desarrollo de procesos ETL.
 * Automatización de tareas repetitivas.
 * Manipulación de datos con Python y Pandas.
+* Lectura y procesamiento de archivos Excel.
 * Integración Python + PostgreSQL.
 * SQL para análisis de negocio.
+* Cargas incrementales.
+* Prevención de registros duplicados.
 * Manejo seguro de credenciales mediante variables de entorno.
+* Desarrollo de dashboards interactivos.
 * Control de versiones con Git.
 * Organización de proyectos de datos.
 
@@ -344,7 +521,7 @@ Este proyecto demuestra experiencia práctica en:
 
 ## 💼 Aplicación para clientes
 
-Este proyecto representa una solución que puede adaptarse a empresas que trabajan con:
+Este proyecto representa una solución adaptable a empresas que trabajan con:
 
 * Excel.
 * CSV.
@@ -363,6 +540,8 @@ Extracción automática
       ↓
 Limpieza y transformación
       ↓
+Validación
+      ↓
 Base de datos
       ↓
 Análisis
@@ -374,25 +553,29 @@ Información para tomar decisiones
 
 ### Propuesta de valor
 
-**Convertir procesos manuales de datos en procesos automatizados, estructurados y medibles.**
+> **Convertir procesos manuales de datos en soluciones automatizadas, estructuradas y medibles que permitan a las empresas tomar mejores decisiones.**
 
 ---
 
 ## 🔮 Próximas mejoras
 
-* [ ] Automatizar la ejecución completa mediante `pipeline.py`.
-* [ ] Evitar registros duplicados durante nuevas cargas.
-* [ ] Agregar validaciones de calidad de datos.
+* [ ] Agregar validaciones avanzadas de calidad de datos.
 * [ ] Incorporar más datos históricos.
 * [ ] Crear pruebas automatizadas.
-* [ ] Crear dashboard de ventas.
+* [ ] Mejorar visualizaciones con Plotly.
+* [ ] Agregar métricas adicionales de negocio.
 * [ ] Automatizar reportes.
-* [ ] Incorporar métricas adicionales de negocio.
+* [ ] Incorporar alertas ante anomalías o cambios relevantes.
+* [ ] Preparar despliegue del dashboard para usuarios externos.
 
 ---
 
-## 👩‍💻 Proyecto
+## 👩‍💻 Proyecto de portafolio
 
 **Sales Intelligence Pipeline**
 
-Proyecto de portafolio enfocado en **automatización, ETL, análisis de datos y Business Intelligence**.
+Proyecto de portafolio enfocado en:
+
+**Automatización + ETL + PostgreSQL + SQL + Business Intelligence + Dashboards**
+
+El proyecto demuestra cómo transformar información dispersa en archivos Excel en una solución automatizada capaz de **procesar datos, evitar duplicados, almacenarlos, analizarlos y presentarlos mediante un dashboard interactivo para apoyar la toma de decisiones.**
