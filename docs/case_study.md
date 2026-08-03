@@ -93,11 +93,11 @@ ETL pipeline completed successfully.
 Cuando se incorpora información nueva, el sistema identifica únicamente los registros que deben agregarse.
 
 ### 5. Dashboard para toma de decisiones
-![Sales Intelligence Dashboard](../images/dashboard_grific.png)
+![Sales Intelligence Dashboard](../images/dashboard_grafic.png)
 La información almacenada en PostgreSQL se presenta mediante un dashboard interactivo desarrollado con Streamlit.
 
 El dashboard incluye:
-
+![Sales Intelligence Dashboard](../images/dashboard_ranking.png)
 #### KPIs
 
 * Total Revenue
@@ -113,7 +113,7 @@ El dashboard incluye:
 * Sales Trend
 
 #### Filtros interactivos
-
+![Dashboard con filtros](../images/dashboard_filters.png)
 El usuario puede combinar filtros de:
 
 * Sucursal
@@ -156,7 +156,7 @@ El pipeline puede ejecutarse nuevamente cuando llegan nuevos datos y detectar qu
 ### 7. Impacto empresarial
 
 La solución transforma un proceso manual de consolidación en un flujo automatizado.
-
+![Ejecución del pipeline ETL](../images/pipeline_execution.png)
 Antes:
 
 ```text
