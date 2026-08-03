@@ -93,7 +93,7 @@ ETL pipeline completed successfully.
 Cuando se incorpora información nueva, el sistema identifica únicamente los registros que deben agregarse.
 
 ### 5. Dashboard para toma de decisiones
-
+![Sales Intelligence Dashboard](../images/dashboard_grific.png)
 La información almacenada en PostgreSQL se presenta mediante un dashboard interactivo desarrollado con Streamlit.
 
 El dashboard incluye:
